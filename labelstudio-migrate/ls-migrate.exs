@@ -12,7 +12,8 @@ req =
 update_image_url = fn task_number when is_integer(task_number) ->
   # Get the image URL from the task
   response = Req.get!(req, url: "/api/tasks/#{task_number}")
-  %{"data" => %{"image" => image_url}} = response.body
+  %{"data" => original_data} = response.body
+  image_url = original_data["image"]
 
   new_image_url =
     String.replace(
@@ -22,14 +23,22 @@ update_image_url = fn task_number when is_integer(task_number) ->
     )
 
   # Patch the task
-  updated_data = %{"data" => %{"image" => new_image_url}}
+  updated_data = Map.put(original_data, "image", new_image_url)
 
-  Req.patch!(req, url: "/api/tasks/#{task_number}", json: updated_data)
+  #IO.puts("#{image_url} -> #{new_image_url}")
+
+  Req.patch!(req, url: "/api/tasks/#{task_number}", json: %{"data" => updated_data})
+  #|> IO.inspect()
+
+  task_number
 end
-
-#update_image_url.(8491)
-#|> IO.inspect()
 
 task_ids = [1,2,3,4]
 
-Enum.each(task_ids, update_image_url)
+task_ids
+|> Task.async_stream(fn task_id ->
+    update_image_url.(task_id)
+  end, max_concurrency: 10)
+|> Enum.each(fn {:ok, result} ->
+  IO.puts(result)
+end)
