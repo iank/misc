@@ -47,5 +47,5 @@ bucket_names |> Enum.each(fn bucket_name ->
       end
     end)
 
-  IO.puts("#{bucket_name}: #{object_size/1024/1024}")
+  IO.puts("#{bucket_name}: #{object_size/1024/1024 |> Float.round(1)} MiB")
 end)
