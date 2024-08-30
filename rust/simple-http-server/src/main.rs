@@ -12,8 +12,6 @@ use tokio::net::TcpListener;
 use http_body_util::{combinators::BoxBody, BodyExt, Empty, Full};
 use hyper::{Method, StatusCode};
 
-use path_clean;
-
 #[derive(Debug, PartialEq)]
 enum PathError {
     OutOfBounds,
@@ -49,8 +47,8 @@ async fn hello(
 }
 
 fn canonicalize_path(input: &str) -> Result<PathBuf, PathError> {
-    let relative_path = if input.starts_with('/') {
-        &input[1..]
+    let relative_path = if let Some(stripped) = input.strip_prefix('/') {
+        stripped
     } else {
         input
     };
