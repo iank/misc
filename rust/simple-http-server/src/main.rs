@@ -10,7 +10,9 @@ use hyper::{Request, Response};
 use hyper_util::rt::TokioIo;
 use tokio::net::TcpListener;
 
-async fn hello(_: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
+async fn hello(
+    _: Request<hyper::body::Incoming>,
+) -> Result<Response<Full<Bytes>>, Infallible> {
     Ok(Response::new(Full::new(Bytes::from("Hello, World"))))
 }
 
@@ -25,8 +27,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     loop {
         let (stream, _) = listener.accept().await?;
 
-        // Use an adapter to access something implementing `tokio::io` traits as if they implement
-        // `hyper::rt` IO traits.
+        // Use an adapter to access something implementing `tokio::io` traits
+        // as if they implement `hyper::rt` IO traits.
         let io = TokioIo::new(stream);
 
         // Spawn a tokio task to serve multiple connections concurrently
