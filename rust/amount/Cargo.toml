@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 proc-mounts = "0.3.0"
+tabled = "0.16.0"

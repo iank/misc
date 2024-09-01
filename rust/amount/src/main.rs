@@ -1,6 +1,7 @@
-use std::collections::HashSet;
 use proc_mounts::MountIter;
+use std::collections::HashSet;
 use std::io;
+use tabled::{builder::Builder, settings::Style};
 
 fn main() -> io::Result<()> {
     // overlay is debatable here
@@ -34,6 +35,8 @@ fn main() -> io::Result<()> {
     .copied()
     .collect();
 
+    let mut builder = Builder::new();
+
     for mount in MountIter::new()?.map(|m| m.unwrap()) {
         if virtual_filesystems.contains(mount.fstype.as_str()) {
             continue;
@@ -41,8 +44,15 @@ fn main() -> io::Result<()> {
         if mount.dest.starts_with("/snap/") && mount.fstype == "squashfs" {
             continue;
         }
-        println!("{} on {} type {}", mount.source.display(), mount.dest.display(), mount.fstype);
+        builder.push_record([
+            mount.source.display().to_string(),
+            mount.dest.display().to_string(),
+            mount.fstype,
+        ]);
     }
+
+    let table = builder.build().with(Style::blank()).to_string();
+    println!("{}", table);
 
     Ok(())
 }
