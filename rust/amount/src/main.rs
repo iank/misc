@@ -1,8 +1,8 @@
-use amount::parser;
 use std::collections::HashSet;
-use std::fs::read_to_string;
+use proc_mounts::MountIter;
+use std::io;
 
-fn main() {
+fn main() -> io::Result<()> {
     // overlay is debatable here
     let virtual_filesystems: HashSet<&str> = [
         "binfmt_misc",
@@ -34,19 +34,15 @@ fn main() {
     .copied()
     .collect();
 
-    for line in read_to_string("/proc/mounts").unwrap().lines() {
-        match parser::parse_line(line) {
-            Ok((_, m)) => {
-                if !virtual_filesystems.contains(m.filesystem.as_str())
-                    && !(m.mount_point.starts_with("/snap")
-                        && m.filesystem == "squashfs")
-                {
-                    println!("{m}");
-                }
-            }
-            Err(_) => {
-                println!("Failed to parse line {line}");
-            }
+    for mount in MountIter::new()?.map(|m| m.unwrap()) {
+        if virtual_filesystems.contains(mount.fstype.as_str()) {
+            continue;
         }
+        if mount.dest.starts_with("/snap/") && mount.fstype == "squashfs" {
+            continue;
+        }
+        println!("{} on {} type {}", mount.source.display(), mount.dest.display(), mount.fstype);
     }
+
+    Ok(())
 }
