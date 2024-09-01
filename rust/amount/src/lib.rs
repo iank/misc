@@ -12,11 +12,12 @@ impl std::fmt::Display for Mount {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{} on {} type {} ({})",
+            //            "{} on {} type {} ({})",
+            "{} on {} type {}",
             self.device,
             self.mount_point,
             self.filesystem,
-            self.options.join(",")
+            //            self.options.join(",")
         )
     }
 }
